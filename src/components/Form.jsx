@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap';
+import {nanoid} from 'nanoid'
+import {firebase} from '../firebase'
 
 const Form = () => {
-    const dataPaises = [
-        { id: 1, nombre: "Natalia", apellido: "Tuiran", edad: 20, idn: 1192798402, tel: 3184414686, correo: "tui@gmail.com", ciudad: "Barranquilla" },
-        { id: 1, nombre: "Kelly", apellido: "Tuiran", edad: 27, idn: 1192798402, tel: 3184414686, correo: "key@gmail.com", ciudad: "Barranquilla" },
-        { id: 1, nombre: "Jorge", apellido: "Tuiran", edad: 56, idn: 1192798402, tel: 3184414686, correo: "jor@gmail.com", ciudad: "Maicao" },
-    ];
+    // const dataPaises = [
+    //     { id: 1, nombre: "Natalia", apellido: "Tuiran", edad: 20, idn: 1192798402, tel: 3184414686, correo: "tui@gmail.com", ciudad: "Barranquilla" },
+    //     { id: 1, nombre: "Kelly", apellido: "Tuiran", edad: 27, idn: 1192798402, tel: 3184414686, correo: "key@gmail.com", ciudad: "Barranquilla" },
+    //     { id: 1, nombre: "Jorge", apellido: "Tuiran", edad: 56, idn: 1192798402, tel: 3184414686, correo: "jor@gmail.com", ciudad: "Maicao" },
+    // ];
 
-    const [data, setData] = useState(dataPaises);
+    const [data, setData] = useState([]);
+    const [modoEdicion, setModoEdicion] = useState(false)
 
     const [name, setName] = useState('');
     const [apellido, setApellido] = useState('');
@@ -17,6 +20,7 @@ const Form = () => {
     const [idn, setIdn] = useState('');
     const [tel, setTel] = useState('');
     const [ciudad, setCiudad] = useState('');
+    const [id, setId] = useState(0);
 
     const [modalInsertar, setModalInsertar] = useState(false);
 
@@ -24,20 +28,74 @@ const Form = () => {
     const openModalCreate = () => {
         setModalInsertar(true);
     }
+    useEffect(()=>{
+        const obtenerDatos = async () =>{
+            try{
+                const db = firebase.firestore()
+                const data = await db.collection('frutas').get()
+                const array = data.docs.map(item =>(
+                    {
+                        id:item.id, ...item.data()
+                    }
+                ))
+                setData(array)
 
-    const add = () => {
-        setData([...data, {
-            id:2,
-            nombre: name,
-            apellido:apellido,
-            edad:edad,
-            idn:idn,
-            correo:correo,
-            tel:tel,
-            ciudad:ciudad
-        }])
+            }catch(error){
+                console.log(error)
+            }
+        }
+        obtenerDatos()
+
+    })
+
+    const add = async() => {
+        try{
+            const db = firebase.firestore()
+            const newUser = {
+                nombre: name,
+                apellido:apellido,
+                edad:edad,
+                idn:idn,
+                correo:correo,
+                tel:tel,
+                ciudad:ciudad
+            }
+            await db.collection('user').add(newUser)
+            setData([...data, {
+                id:nanoid(),
+                nombre: name,
+                apellido:apellido,
+                edad:edad,
+                idn:idn,
+                correo:correo,
+                tel:tel,
+                ciudad:ciudad
+            }])
+        }catch(error){
+            console.log(error)
+        }
         setModalInsertar(false)
     }
+
+    const auxEditar = (item) =>{
+        setName(item.nombre)
+        setApellido(item.apellido)
+        setEdad(item.edad)
+        setCorreo(item.correo)
+        setIdn(item.idn)
+        setTel(item.tel)
+        setCiudad(item.ciudad)
+        openModalCreate()
+        setModoEdicion(true)
+    }
+
+    const eliminar = (item) => {
+
+    }
+
+
+
+
     return (
         <div className="container mt-5">
             <h1 className='text-center'>REGISTRO DE USUARIOS</h1>
@@ -70,7 +128,7 @@ const Form = () => {
                             <td>{elemento.tel}</td>
                             <td>{elemento.correo}</td>
                             <td>{elemento.ciudad}</td>
-                            <td><button className="btn btn-warning">Editar</button></td>
+                            <td><button className="btn btn-warning" onClick={()=> auxEditar(elemento)}>Editar</button></td>
                             <td><button className="btn btn-danger">Eliminar</button></td>
                         </tr>
                     ))
