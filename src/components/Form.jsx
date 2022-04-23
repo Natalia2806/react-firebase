@@ -6,15 +6,6 @@ const Form = () => {
         { id: 1, nombre: "Natalia", apellido: "Tuiran", edad: 20, idn: 1192798402, tel: 3184414686, correo: "tui@gmail.com", ciudad: "Barranquilla" },
         { id: 1, nombre: "Kelly", apellido: "Tuiran", edad: 27, idn: 1192798402, tel: 3184414686, correo: "key@gmail.com", ciudad: "Barranquilla" },
         { id: 1, nombre: "Jorge", apellido: "Tuiran", edad: 56, idn: 1192798402, tel: 3184414686, correo: "jor@gmail.com", ciudad: "Maicao" },
-        // { id: 2, nombre: "Brasil", minutos: 225 },
-        // { id: 3, nombre: "Colombia", minutos: 216 },
-        // { id: 4, nombre: "Nigeria", minutos: 216 },
-        // { id: 5, nombre: "Argentina", minutos: 207 },
-        // { id: 6, nombre: "Indonesia", minutos: 195 },
-        // { id: 7, nombre: "Emiratos Árabes Unidos", minutos: 191 },
-        // { id: 8, nombre: "México", minutos: 190 },
-        // { id: 9, nombre: "Sudáfrica", minutos: 190 },
-        // { id: 10, nombre: "Egipto", minutos: 186 },
     ];
 
     const [data, setData] = useState(dataPaises);
@@ -32,6 +23,20 @@ const Form = () => {
     //Metodos
     const openModalCreate = () => {
         setModalInsertar(true);
+    }
+
+    const add = () => {
+        setData([...data, {
+            id:2,
+            nombre: name,
+            apellido:apellido,
+            edad:edad,
+            idn:idn,
+            correo:correo,
+            tel:tel,
+            ciudad:ciudad
+        }])
+        setModalInsertar(false)
     }
     return (
         <div className="container mt-5">
@@ -164,7 +169,9 @@ const Form = () => {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <button className="btn btn-primary"> Crear </button>
+                    <button className="btn btn-primary"
+                    onClick={() =>add()}
+                    > Crear </button>
                     <button
                         className="btn btn-danger"
                         onClick={() => setModalInsertar(false)}
