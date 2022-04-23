@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap';
-import {nanoid} from 'nanoid'
-import {firebase} from '../firebase'
+import { nanoid } from 'nanoid'
+import { firebase } from '../firebase'
 
 const Form = () => {
     const [data, setData] = useState([]);
@@ -22,19 +22,19 @@ const Form = () => {
     const openModalCreate = () => {
         setModalInsertar(true);
     }
-    useEffect(()=>{
-        const obtenerDatos = async () =>{
-            try{
+    useEffect(() => {
+        const obtenerDatos = async () => {
+            try {
                 const db = firebase.firestore()
                 const data = await db.collection('user').get()
-                const array = data.docs.map(item =>(
+                const array = data.docs.map(item => (
                     {
-                        id:item.id, ...item.data()
+                        id: item.id, ...item.data()
                     }
                 ))
                 setData(array)
 
-            }catch(error){
+            } catch (error) {
                 console.log(error)
             }
         }
@@ -42,36 +42,44 @@ const Form = () => {
 
     })
 
-    const add = async() => {
-        try{
+    const add = async () => {
+        try {
             const db = firebase.firestore()
             const newUser = {
                 nombre: name,
-                apellido:apellido,
-                edad:edad,
-                idn:idn,
-                correo:correo,
-                tel:tel,
-                ciudad:ciudad
+                apellido: apellido,
+                edad: edad,
+                idn: idn,
+                correo: correo,
+                tel: tel,
+                ciudad: ciudad
             }
             await db.collection('user').add(newUser)
             setData([...data, {
-                id:nanoid(),
+                id: nanoid(),
                 nombre: name,
-                apellido:apellido,
-                edad:edad,
-                idn:idn,
-                correo:correo,
-                tel:tel,
-                ciudad:ciudad
+                apellido: apellido,
+                edad: edad,
+                idn: idn,
+                correo: correo,
+                tel: tel,
+                ciudad: ciudad
             }])
-        }catch(error){
+        } catch (error) {
             console.log(error)
         }
         setModalInsertar(false)
+        setName("")
+        setApellido("")
+        setEdad(0)
+        setCorreo("")
+        setIdn("")
+        setTel("")
+        setCiudad("")
     }
 
-    const auxEditar = (item) =>{
+    const auxEditar = (item) => {
+        setId(item.id)
         setName(item.nombre)
         setApellido(item.apellido)
         setEdad(item.edad)
@@ -79,22 +87,48 @@ const Form = () => {
         setIdn(item.idn)
         setTel(item.tel)
         setCiudad(item.ciudad)
-        openModalCreate()
         setModoEdicion(true)
+        openModalCreate()
+
     }
 
-    const eliminar= async (id) =>{
-        try{
+    const editar = async () => {
+        try {
+            const db = firebase.firestore()
+            await db.collection('user').doc(id).update({
+                nombre: name,
+                apellido: apellido,
+                edad: edad,
+                idn: idn,
+                correo: correo,
+                tel: tel,
+                ciudad: ciudad
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+        setModoEdicion(false)
+        setModalInsertar(false)
+        setName("")
+        setApellido("")
+        setEdad(0)
+        setCorreo("")
+        setIdn("")
+        setTel("")
+        setCiudad("")
+    }
+
+    const eliminar = async (id) => {
+        try {
             const db = firebase.firestore()
             await db.collection('user').doc(id).delete()
             const aux = data.filter(item => item.id !== id)
             setData(aux)
-        }catch(error){
+        } catch (error) {
             console.log(error)
         }
     }
-
-
 
     return (
         <div className="container mt-5">
@@ -126,8 +160,8 @@ const Form = () => {
                             <td>{elemento.tel}</td>
                             <td>{elemento.correo}</td>
                             <td>{elemento.ciudad}</td>
-                            <td><button className="btn btn-warning" onClick={()=> auxEditar(elemento)}>Editar</button></td>
-                            <td><button className="btn btn-danger"onClick={()=> eliminar(elemento.id)}>Eliminar</button></td>
+                            <td><button className="btn btn-warning" onClick={() => auxEditar(elemento)}>Editar</button></td>
+                            <td><button className="btn btn-danger" onClick={() => eliminar(elemento.id)}>Eliminar</button></td>
                         </tr>
                     ))
                     }
@@ -225,9 +259,19 @@ const Form = () => {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <button className="btn btn-primary"
-                    onClick={() =>add()}
-                    > Crear </button>
+                    {
+                        modoEdicion ? (
+                            <button className="btn btn-warning"
+                                onClick={() => editar()}
+                            > Editar </button>
+                        )
+                            :
+                            (
+                                <button className="btn btn-primary"
+                                    onClick={() => add()}
+                                > Crear </button>
+                            )
+                    }
                     <button
                         className="btn btn-danger"
                         onClick={() => setModalInsertar(false)}
@@ -236,9 +280,6 @@ const Form = () => {
                     </button>
                 </ModalFooter>
             </Modal>
-
-
-
         </div>
     )
 }
