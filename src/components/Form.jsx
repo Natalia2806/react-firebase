@@ -16,11 +16,21 @@ const Form = () => {
     const [ciudad, setCiudad] = useState('');
     const [id, setId] = useState(0);
 
+    const [error, setError] = useState(null)
+
     const [modalInsertar, setModalInsertar] = useState(false);
+
+    // const [noRepeat, setNoRepeat] = useState(false)
 
     //Metodos
     const openModalCreate = () => {
         setModalInsertar(true);
+        setError(null);
+    }
+
+    function validar_email(email) {
+        var regex = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
+        return regex.test(email) ? true : false;
     }
     useEffect(() => {
         const obtenerDatos = async () => {
@@ -43,28 +53,80 @@ const Form = () => {
     })
 
     const add = async () => {
+        if (!name.trim()) {
+            setError('El nombre es requerido!')
+            return
+        }
+
+        if (!apellido.trim()) {
+            setError('El apellido es requerido!')
+            return
+        }
+        if (edad < 0) {
+            setError('La edad no puede ser negativa')
+            return
+        }
+        if (edad === 0) {
+            setError('La edad es requerida')
+            return
+        }
+        if (!idn.trim()) {
+            setError('Numero de identificación requerido!')
+            return
+        }
+        if (!tel.trim()) {
+            setError('Número de telefono requerido!')
+            return
+        }
+        if (!validar_email(correo)) {
+            setError('Por favor ingrese un correo valido!')
+            return
+        }
+        if (!correo.trim()) {
+            setError('Correo requerido!')
+            return
+        }
+        if (!ciudad.trim()) {
+            setError('Nombre de la ciudad requerido')
+            return
+        }
+
+        // data.forEach((item) => {
+        //     if(item.idn === idn){
+        //         setError('Ya existe un usuario con esta identificación')
+        //         setNoRepeat(true)
+        //     }else{
+        //         setNoRepeat(false)
+        //     }
+        // })
+
+
         try {
-            const db = firebase.firestore()
-            const newUser = {
-                nombre: name,
-                apellido: apellido,
-                edad: edad,
-                idn: idn,
-                correo: correo,
-                tel: tel,
-                ciudad: ciudad
-            }
-            await db.collection('user').add(newUser)
-            setData([...data, {
-                id: nanoid(),
-                nombre: name,
-                apellido: apellido,
-                edad: edad,
-                idn: idn,
-                correo: correo,
-                tel: tel,
-                ciudad: ciudad
-            }])
+                const db = firebase.firestore()
+                const newUser = {
+                    nombre: name,
+                    apellido: apellido,
+                    edad: edad,
+                    idn: idn,
+                    correo: correo,
+                    tel: tel,
+                    ciudad: ciudad
+                }
+                    await db.collection('user').add(newUser)
+                    setData([...data, {
+                        id: nanoid(),
+                        nombre: name,
+                        apellido: apellido,
+                        edad: edad,
+                        idn: idn,
+                        correo: correo,
+                        tel: tel,
+                        ciudad: ciudad
+                    }]) 
+                
+            
+            
+            
         } catch (error) {
             console.log(error)
         }
@@ -76,6 +138,7 @@ const Form = () => {
         setIdn("")
         setTel("")
         setCiudad("")
+        setError(null)
     }
 
     const auxEditar = (item) => {
@@ -130,6 +193,19 @@ const Form = () => {
         }
     }
 
+    const cancelar = async () => {
+        setModalInsertar(false)
+        setModoEdicion(false)
+        setName("")
+        setApellido("")
+        setEdad(0)
+        setCorreo("")
+        setIdn("")
+        setTel("")
+        setCiudad("")
+        setError(null)
+    }
+
     return (
         <div className="container mt-5">
             <h1 className='text-center'>REGISTRO DE USUARIOS</h1>
@@ -176,6 +252,7 @@ const Form = () => {
                 </ModalHeader>
                 <ModalBody>
                     <div className="form-group">
+                        {error ? <div class="alert alert-danger" role="alert">{error}</div> : null}
                         <div className="row">
                             <div className="col-5">
                                 <label>Nombre</label>
@@ -238,8 +315,8 @@ const Form = () => {
                                 <label>Correo</label>
                                 <input
                                     className="form-control"
-                                    type="text"
-                                    name="tel"
+                                    type="email"
+                                    name="correo"
                                     value={correo}
                                     onChange={(e) => setCorreo(e.target.value)}
                                 />
@@ -274,7 +351,7 @@ const Form = () => {
                     }
                     <button
                         className="btn btn-danger"
-                        onClick={() => setModalInsertar(false)}
+                        onClick={() => cancelar()}
                     >
                         Cancelar
                     </button>
