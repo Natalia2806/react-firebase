@@ -4,12 +4,6 @@ import {nanoid} from 'nanoid'
 import {firebase} from '../firebase'
 
 const Form = () => {
-    // const dataPaises = [
-    //     { id: 1, nombre: "Natalia", apellido: "Tuiran", edad: 20, idn: 1192798402, tel: 3184414686, correo: "tui@gmail.com", ciudad: "Barranquilla" },
-    //     { id: 1, nombre: "Kelly", apellido: "Tuiran", edad: 27, idn: 1192798402, tel: 3184414686, correo: "key@gmail.com", ciudad: "Barranquilla" },
-    //     { id: 1, nombre: "Jorge", apellido: "Tuiran", edad: 56, idn: 1192798402, tel: 3184414686, correo: "jor@gmail.com", ciudad: "Maicao" },
-    // ];
-
     const [data, setData] = useState([]);
     const [modoEdicion, setModoEdicion] = useState(false)
 
@@ -32,7 +26,7 @@ const Form = () => {
         const obtenerDatos = async () =>{
             try{
                 const db = firebase.firestore()
-                const data = await db.collection('frutas').get()
+                const data = await db.collection('user').get()
                 const array = data.docs.map(item =>(
                     {
                         id:item.id, ...item.data()
@@ -89,10 +83,16 @@ const Form = () => {
         setModoEdicion(true)
     }
 
-    const eliminar = (item) => {
-
+    const eliminar= async (id) =>{
+        try{
+            const db = firebase.firestore()
+            await db.collection('user').doc(id).delete()
+            const aux = data.filter(item => item.id !== id)
+            setData(aux)
+        }catch(error){
+            console.log(error)
+        }
     }
-
 
 
 
@@ -105,7 +105,6 @@ const Form = () => {
             <table className="table table-bordered">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Apellido</th>
                         <th>Edad</th>
@@ -120,7 +119,6 @@ const Form = () => {
                 <tbody>
                     {data.map(elemento => (
                         <tr>
-                            <td>{elemento.id}</td>
                             <td>{elemento.nombre}</td>
                             <td>{elemento.apellido}</td>
                             <td>{elemento.edad}</td>
@@ -129,7 +127,7 @@ const Form = () => {
                             <td>{elemento.correo}</td>
                             <td>{elemento.ciudad}</td>
                             <td><button className="btn btn-warning" onClick={()=> auxEditar(elemento)}>Editar</button></td>
-                            <td><button className="btn btn-danger">Eliminar</button></td>
+                            <td><button className="btn btn-danger"onClick={()=> eliminar(elemento.id)}>Eliminar</button></td>
                         </tr>
                     ))
                     }
